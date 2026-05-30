@@ -22,7 +22,7 @@ class MyApp extends StatelessWidget {
 
     return MaterialApp(
 
-      title: 'Flutter D',
+      title: 'Flutter Dart pro',
 
       theme: ThemeData(
 
@@ -56,7 +56,7 @@ class MyHomePage extends StatelessWidget {
 
       appBar: AppBar(
 
-        title: const Text('hola amigos soy miki maus'),
+        title: const Text('App de clima final (pruebas)'),
 
         centerTitle: true,
 
@@ -80,7 +80,7 @@ class MyHomePage extends StatelessWidget {
 
                 fontWeight: FontWeight.bold,
 
-                color: Colors.blue,
+                color: Colors.red,
 
               ),
 
@@ -90,7 +90,7 @@ class MyHomePage extends StatelessWidget {
 
             const Text(
 
-              'Hawaii',
+              'Querétaro',
 
               style: TextStyle(
 
