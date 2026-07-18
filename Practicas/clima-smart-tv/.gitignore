@@ -1,0 +1,10 @@
+# .gitignore
+.env
+env.js
+node_modules/
+*.jks
+*.keystore
+.DS_Store
+Thumbs.db
+# Verificar que .env y env.js no seran versionados:
+# git status (no debe aparecer .env ni env.js en la lista)
