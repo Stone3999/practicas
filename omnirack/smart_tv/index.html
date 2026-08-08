@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=1920" />
+  <meta name="theme-color" content="#ffffff" />
+  
+  <meta http-equiv="Content-Security-Policy"
+    content="
+      default-src 'self';
+      script-src 'self' 'unsafe-inline';
+      style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+      font-src 'self' https://fonts.gstatic.com;
+      img-src 'self' data:;
+      media-src 'self';
+      connect-src 'self';
+    " />
+  
+  <link rel="manifest" href="/manifest.json" />
+  <link rel="apple-touch-icon" href="/icons/icon-192.png" />
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
+  
+  <title>OmniRack — Monitor de Data Center</title>
+  <link rel="stylesheet" href="/css/styles.css" />
+</head>
+<body>
+  
+  <div class="main-card">
+    <div class="header">
+      OmniRack
+      <button id="btnCloseApp" class="close-btn focusable" tabindex="-1">✕</button>
+    </div>
+    
+    <div class="content-split">
+      <div class="left-panel">
+        <button class="dc-btn focusable focused" id="dcA" data-dc="A" tabindex="0">
+          <span class="dc-name">Data Center A</span>
+          <span class="dc-status status-ok" id="statusA">✔️ Estable</span>
+        </button>
+        <button class="dc-btn focusable" id="dcB" data-dc="B" tabindex="-1">
+          <span class="dc-name">Data Center B</span>
+          <span class="dc-status status-ok" id="statusB">✔️ Estable</span>
+        </button>
+        <button class="dc-btn focusable" id="dcC" data-dc="C" tabindex="-1">
+          <span class="dc-name">Data Center C</span>
+          <span class="dc-status status-ok" id="statusC">✔️ Estable</span>
+        </button>
+        <button class="dc-btn focusable" id="dcD" data-dc="D" tabindex="-1">
+          <span class="dc-name">Data Center D</span>
+          <span class="dc-status status-ok" id="statusD">✔️ Estable</span>
+        </button>
+      </div>
+
+      <div class="right-panel">
+        <div class="chart-container">
+          <div class="bar-wrapper">
+            <div class="bar-bg"><div class="bar" id="bar1" style="height: 0%;"></div></div>
+            <span class="bar-label">R1</span>
+          </div>
+          <div class="bar-wrapper">
+            <div class="bar-bg"><div class="bar" id="bar2" style="height: 0%;"></div></div>
+            <span class="bar-label">R2</span>
+          </div>
+          <div class="bar-wrapper">
+            <div class="bar-bg"><div class="bar" id="bar3" style="height: 0%;"></div></div>
+            <span class="bar-label">R3</span>
+          </div>
+          <div class="bar-wrapper">
+            <div class="bar-bg"><div class="bar" id="bar4" style="height: 0%;"></div></div>
+            <span class="bar-label">R4</span>
+          </div>
+          <div class="bar-wrapper">
+            <div class="bar-bg"><div class="bar" id="bar5" style="height: 0%;"></div></div>
+            <span class="bar-label">R5</span>
+          </div>
+          <div class="bar-wrapper">
+            <div class="bar-bg"><div class="bar" id="bar6" style="height: 0%;"></div></div>
+            <span class="bar-label">R6</span>
+          </div>
+        </div>
+        
+        <div class="actions">
+          <button class="pill-btn focusable" id="btnCCTV" tabindex="-1">Ver CCTV</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="dpad-hint">
+      <span>➕ Mover</span>
+      <span>OK Seleccionar</span>
+    </div>
+  </div>
+
+  <div id="cctvModal" class="hidden">
+    <video id="cctvVideo" autoplay loop muted src="/assets/videos/cctv_v2.mp4"></video>
+  </div>
+
+  <script src="/js/sse-client.js"></script>
+  <script src="/js/navigation.js"></script>
+  <script src="/js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,78 @@
+{
+  "meta": {
+    "retentionDays": 30,
+    "maxReadingsPerRack": 5000,
+    "project": "OMNIRACK",
+    "org": "Stone3999 DC",
+    "createdAt": "2026-08-07T00:00:00.000Z"
+  },
+  "racks": [
+    {
+      "id": "RACK-01",
+      "name": "Rack A1 - Core",
+      "location": "Sala 1 - CDMX",
+      "ip": "10.0.0.11",
+      "model": "Rack OmniMan 42U",
+      "camera": "rack-01",
+      "status": "ok",
+      "thresholds": {
+        "temperature": { "warning": 30, "alert": 35, "unit": "C" },
+        "humidity": { "warningMin": 20, "warningMax": 75, "alertMin": 10, "alertMax": 85, "unit": "%" },
+        "power": { "warning": 8.0, "alert": 9.5, "unit": "kW" },
+        "door": { "openIsAlert": true }
+      },
+      "latest": null
+    },
+    {
+      "id": "RACK-02",
+      "name": "Rack B2 - Edge",
+      "location": "Sala 2 - Queretaro",
+      "ip": "10.0.0.12",
+      "model": "Rack OmniMan 42U",
+      "camera": "rack-02",
+      "status": "ok",
+      "thresholds": {
+        "temperature": { "warning": 28, "alert": 33, "unit": "C" },
+        "humidity": { "warningMin": 20, "warningMax": 75, "alertMin": 10, "alertMax": 85, "unit": "%" },
+        "power": { "warning": 7.5, "alert": 9.0, "unit": "kW" },
+        "door": { "openIsAlert": true }
+      },
+      "latest": null
+    },
+    {
+      "id": "RACK-03",
+      "name": "Rack C3 - Storage",
+      "location": "Sala 3 - GDL",
+      "ip": "10.0.0.13",
+      "model": "Rack OmniMan 21U",
+      "camera": "rack-03",
+      "status": "ok",
+      "thresholds": {
+        "temperature": { "warning": 31, "alert": 36, "unit": "C" },
+        "humidity": { "warningMin": 20, "warningMax": 75, "alertMin": 10, "alertMax": 85, "unit": "%" },
+        "power": { "warning": 8.5, "alert": 10.0, "unit": "kW" },
+        "door": { "openIsAlert": true }
+      },
+      "latest": null
+    },
+    {
+      "id": "RACK-04",
+      "name": "Rack D4 - GPU",
+      "location": "Sala 4 - MTY",
+      "ip": "10.0.0.14",
+      "model": "Rack OmniMan 42U",
+      "camera": "rack-04",
+      "status": "ok",
+      "thresholds": {
+        "temperature": { "warning": 32, "alert": 37, "unit": "C" },
+        "humidity": { "warningMin": 20, "warningMax": 75, "alertMin": 10, "alertMax": 85, "unit": "%" },
+        "power": { "warning": 9.0, "alert": 10.5, "unit": "kW" },
+        "door": { "openIsAlert": true }
+      },
+      "latest": null
+    }
+  ],
+  "readings": [],
+  "alerts": [],
+  "tokens": []
+}

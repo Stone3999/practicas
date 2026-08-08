@@ -1,0 +1,48 @@
+# ============================================
+# OMNIRACK - Seguridad critica (NO ELIMINAR)
+# Credenciales / secretos: jamas versionar
+# ============================================
+.env
+.env.*
+!.env.example
+*.jks
+*.keystore
+*.p12
+key.properties
+secrets.*
+env.js
+
+# Archivos temporales de Word
+~\$*
+*.tmp
+~WRL*
+
+# Flutter / Dart
+.dart_tool/
+.packages
+.flutter-plugins
+.flutter-plugins-dependencies
+build/
+.metadata
+*.lock
+
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# IDE
+.idea/
+*.iml
+.vscode/
+*.suo
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Firmas / APK de release
+*.apk
+*.aab
