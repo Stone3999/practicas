@@ -44,8 +44,10 @@ class SensorSimulator {
 
   void start() {
     if (_timer != null) return;
-    _timer = Timer.periodic(const Duration(seconds: 5), (_) => _update());
+    _timer = Timer.periodic(const Duration(seconds: 1), (_) => _update());
   }
+
+  bool get isRunning => _timer != null;
 
   void _update() {
     // logica

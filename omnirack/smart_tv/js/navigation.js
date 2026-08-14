@@ -1,19 +1,24 @@
 // logica
 const focusables = [
-  'dcA', 'dcB', 'dcC', 'dcD',
-  'btnMore', 'btnCCTV'
+  'dcA', 'cctvA',
+  'dcB', 'cctvB',
+  'dcC', 'cctvC',
+  'dcD', 'cctvD'
 ];
 
-// logica
-// logica
-// logica
 const NAV_MAP = {
-  0: { down: 1, right: 4 },
-  1: { up: 0, down: 2, right: 4 },
-  2: { up: 1, down: 3, right: 5 },
-  3: { up: 2, right: 5 },
-  4: { left: 0, right: 5, down: 5 },
-  5: { left: 4, up: 4, down: null, right: null }
+  // A
+  0: { right: 2, down: 1 },
+  1: { right: 3, up: 0 },
+  // B
+  2: { left: 0, right: 4, down: 3 },
+  3: { left: 1, right: 5, up: 2 },
+  // C
+  4: { left: 2, right: 6, down: 5 },
+  5: { left: 3, right: 7, up: 4 },
+  // D
+  6: { left: 4, down: 7 },
+  7: { left: 5, up: 6 }
 };
 
 let currentIdx = 0;
@@ -34,17 +39,25 @@ function updateFocus(newIdx) {
     newEl.setAttribute('tabindex', '0');
     newEl.focus();
   }
+
+  // Desplazar carrusel basado en el Data Center activo
+  const track = document.getElementById('carouselTrack');
+  const dcIndex = Math.floor(currentIdx / 2); // 0, 1, 2, 3
+  if (track) {
+    track.style.transform = `translateX(-${dcIndex * 100}%)`;
+  }
 }
 
 document.addEventListener('keydown', (e) => {
   const map = NAV_MAP[currentIdx];
   let newIdx = currentIdx;
   
-  // logica
   const modal = document.getElementById('cctvModal');
   if (!modal.classList.contains('hidden')) {
     if (e.key === 'Escape' || e.key === 'Enter') {
       modal.classList.add('hidden');
+      const cctvVideo = document.getElementById('cctvVideo');
+      if (cctvVideo) cctvVideo.pause();
     }
     return;
   }
@@ -57,8 +70,11 @@ document.addEventListener('keydown', (e) => {
     case 'Enter':
       const activeEl = document.getElementById(focusables[currentIdx]);
       if (activeEl) {
-        activeEl.dispatchEvent(new CustomEvent('card-select', { bubbles: true }));
-        activeEl.click();
+        if (activeEl.id.startsWith('cctv')) {
+          activeEl.click();
+        } else {
+          activeEl.dispatchEvent(new CustomEvent('card-select', { bubbles: true }));
+        }
       }
       return;
     default: return;
@@ -67,15 +83,5 @@ document.addEventListener('keydown', (e) => {
   if (newIdx !== undefined) {
     e.preventDefault();
     updateFocus(newIdx);
-  }
-});
-
-// logica
-focusables.forEach((id, idx) => {
-  const el = document.getElementById(id);
-  if (el) {
-    el.addEventListener('click', () => {
-      updateFocus(idx);
-    });
   }
 });

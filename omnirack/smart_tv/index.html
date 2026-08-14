@@ -28,74 +28,110 @@
 </head>
 <body>
   
-  <div class="main-card">
-    <div class="header">
-      OmniRack
-      <button id="btnCloseApp" class="close-btn focusable" tabindex="-1">✕</button>
-    </div>
-    
-    <div class="content-split">
-      <div class="left-panel">
-        <button class="dc-btn focusable focused" id="dcA" data-dc="A" tabindex="0">
-          <span class="dc-name">Data Center A</span>
-          <span class="dc-status status-ok" id="statusA">✔️ Estable</span>
-        </button>
-        <button class="dc-btn focusable" id="dcB" data-dc="B" tabindex="-1">
-          <span class="dc-name">Data Center B</span>
-          <span class="dc-status status-ok" id="statusB">✔️ Estable</span>
-        </button>
-        <button class="dc-btn focusable" id="dcC" data-dc="C" tabindex="-1">
-          <span class="dc-name">Data Center C</span>
-          <span class="dc-status status-ok" id="statusC">✔️ Estable</span>
-        </button>
-        <button class="dc-btn focusable" id="dcD" data-dc="D" tabindex="-1">
-          <span class="dc-name">Data Center D</span>
-          <span class="dc-status status-ok" id="statusD">✔️ Estable</span>
-        </button>
-      </div>
-
-      <div class="right-panel">
-        <div class="chart-container">
-          <div class="bar-wrapper">
-            <div class="bar-bg"><div class="bar" id="bar1" style="height: 0%;"></div></div>
-            <span class="bar-label">R1</span>
-          </div>
-          <div class="bar-wrapper">
-            <div class="bar-bg"><div class="bar" id="bar2" style="height: 0%;"></div></div>
-            <span class="bar-label">R2</span>
-          </div>
-          <div class="bar-wrapper">
-            <div class="bar-bg"><div class="bar" id="bar3" style="height: 0%;"></div></div>
-            <span class="bar-label">R3</span>
-          </div>
-          <div class="bar-wrapper">
-            <div class="bar-bg"><div class="bar" id="bar4" style="height: 0%;"></div></div>
-            <span class="bar-label">R4</span>
-          </div>
-          <div class="bar-wrapper">
-            <div class="bar-bg"><div class="bar" id="bar5" style="height: 0%;"></div></div>
-            <span class="bar-label">R5</span>
-          </div>
-          <div class="bar-wrapper">
-            <div class="bar-bg"><div class="bar" id="bar6" style="height: 0%;"></div></div>
-            <span class="bar-label">R6</span>
-          </div>
-        </div>
-        
-        <div class="actions">
-          <button class="pill-btn focusable" id="btnCCTV" tabindex="-1">Ver CCTV</button>
-        </div>
-      </div>
-    </div>
-
-    <div class="dpad-hint">
-      <span>➕ Mover</span>
-      <span>OK Seleccionar</span>
-    </div>
+  <!-- fondo -->
+  <div id="videoContainer" class="video-container fallback-bg">
+    <video id="bgVideo" autoplay loop muted preload="none"></video>
   </div>
+  
+  <!-- ui -->
+  <div class="main-overlay">
+    <div class="giant-white-card">
+      <div class="header">
+        <button id="btnCloseApp" class="close-btn focusable" tabindex="-1"><img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='black'><path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M6 18L18 6M6 6l12 12'/></svg>" width="40" height="40" alt="X"/></button>
+        <span class="header-title">OmniRack</span>
+        <span class="header-time" id="clock">12:00</span>
+      </div>
+      
+      <div class="carousel-viewport">
+        <div class="carousel-track" id="carouselTrack">
+          <!-- Data Center A -->
+          <div class="dc-slide focusable focused" id="dcA" data-dc="A" tabindex="0">
+            <div class="slide-header">Data Center A</div>
+            <div class="chart-container">
+              <!-- 6 Racks -->
+              <div class="chart-bar-wrapper"><div class="chart-bar" id="bar-A-0" style="height: 0%"></div><span class="bar-label">R1</span></div>
+              <div class="chart-bar-wrapper"><div class="chart-bar" id="bar-A-1" style="height: 0%"></div><span class="bar-label">R2</span></div>
+              <div class="chart-bar-wrapper"><div class="chart-bar" id="bar-A-2" style="height: 0%"></div><span class="bar-label">R3</span></div>
+              <div class="chart-bar-wrapper"><div class="chart-bar" id="bar-A-3" style="height: 0%"></div><span class="bar-label">R4</span></div>
+              <div class="chart-bar-wrapper"><div class="chart-bar" id="bar-A-4" style="height: 0%"></div><span class="bar-label">R5</span></div>
+              <div class="chart-bar-wrapper"><div class="chart-bar" id="bar-A-5" style="height: 0%"></div><span class="bar-label">R6</span></div>
+            </div>
+            <div class="slide-stats">
+              <span id="tempA">--°C</span>
+              <span id="statusA" class="status-ok">Estable</span>
+            </div>
+            <button class="slide-cctv-btn focusable" id="cctvA" tabindex="-1">Ver CCTV</button>
+          </div>
+
+          <!-- Data Center B -->
+          <div class="dc-slide focusable" id="dcB" data-dc="B" tabindex="-1">
+            <div class="slide-header">Data Center B</div>
+            <div class="chart-container">
+              <div class="chart-bar-wrapper"><div class="chart-bar" id="bar-B-0" style="height: 0%"></div><span class="bar-label">R1</span></div>
+              <div class="chart-bar-wrapper"><div class="chart-bar" id="bar-B-1" style="height: 0%"></div><span class="bar-label">R2</span></div>
+              <div class="chart-bar-wrapper"><div class="chart-bar" id="bar-B-2" style="height: 0%"></div><span class="bar-label">R3</span></div>
+              <div class="chart-bar-wrapper"><div class="chart-bar" id="bar-B-3" style="height: 0%"></div><span class="bar-label">R4</span></div>
+              <div class="chart-bar-wrapper"><div class="chart-bar" id="bar-B-4" style="height: 0%"></div><span class="bar-label">R5</span></div>
+              <div class="chart-bar-wrapper"><div class="chart-bar" id="bar-B-5" style="height: 0%"></div><span class="bar-label">R6</span></div>
+            </div>
+            <div class="slide-stats">
+              <span id="tempB">--°C</span>
+              <span id="statusB" class="status-ok">✔️ Estable</span>
+            </div>
+            <button class="slide-cctv-btn focusable" id="cctvB" tabindex="-1">👁️ Ver CCTV</button>
+          </div>
+
+          <!-- Data Center C -->
+          <div class="dc-slide focusable" id="dcC" data-dc="C" tabindex="-1">
+            <div class="slide-header">Data Center C</div>
+            <div class="chart-container">
+              <div class="chart-bar-wrapper"><div class="chart-bar" id="bar-C-0" style="height: 0%"></div><span class="bar-label">R1</span></div>
+              <div class="chart-bar-wrapper"><div class="chart-bar" id="bar-C-1" style="height: 0%"></div><span class="bar-label">R2</span></div>
+              <div class="chart-bar-wrapper"><div class="chart-bar" id="bar-C-2" style="height: 0%"></div><span class="bar-label">R3</span></div>
+              <div class="chart-bar-wrapper"><div class="chart-bar" id="bar-C-3" style="height: 0%"></div><span class="bar-label">R4</span></div>
+              <div class="chart-bar-wrapper"><div class="chart-bar" id="bar-C-4" style="height: 0%"></div><span class="bar-label">R5</span></div>
+              <div class="chart-bar-wrapper"><div class="chart-bar" id="bar-C-5" style="height: 0%"></div><span class="bar-label">R6</span></div>
+            </div>
+            <div class="slide-stats">
+              <span id="tempC">--°C</span>
+              <span id="statusC" class="status-ok">✔️ Estable</span>
+            </div>
+            <button class="slide-cctv-btn focusable" id="cctvC" tabindex="-1">👁️ Ver CCTV</button>
+          </div>
+
+          <!-- Data Center D -->
+          <div class="dc-slide focusable" id="dcD" data-dc="D" tabindex="-1">
+            <div class="slide-header">Data Center D</div>
+            <div class="chart-container">
+              <div class="chart-bar-wrapper"><div class="chart-bar" id="bar-D-0" style="height: 0%"></div><span class="bar-label">R1</span></div>
+              <div class="chart-bar-wrapper"><div class="chart-bar" id="bar-D-1" style="height: 0%"></div><span class="bar-label">R2</span></div>
+              <div class="chart-bar-wrapper"><div class="chart-bar" id="bar-D-2" style="height: 0%"></div><span class="bar-label">R3</span></div>
+              <div class="chart-bar-wrapper"><div class="chart-bar" id="bar-D-3" style="height: 0%"></div><span class="bar-label">R4</span></div>
+              <div class="chart-bar-wrapper"><div class="chart-bar" id="bar-D-4" style="height: 0%"></div><span class="bar-label">R5</span></div>
+              <div class="chart-bar-wrapper"><div class="chart-bar" id="bar-D-5" style="height: 0%"></div><span class="bar-label">R6</span></div>
+            </div>
+            <div class="slide-stats">
+              <span id="tempD">--°C</span>
+              <span id="statusD" class="status-ok">✔️ Estable</span>
+            </div>
+            <button class="slide-cctv-btn focusable" id="cctvD" tabindex="-1">👁️ Ver CCTV</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="dpad-hint-global">
+        <span>⬅️ ➡️ Mover</span>
+        <span>⬇️ Bajar a CCTV</span>
+        <span>OK Seleccionar</span>
+      </div>
+    </div> <!-- /giant-white-card -->
+  </div> <!-- /main-overlay -->
 
   <div id="cctvModal" class="hidden">
-    <video id="cctvVideo" autoplay loop muted src="/assets/videos/cctv_v2.mp4"></video>
+    <video id="cctvVideo" autoplay loop muted preload="none"></video>
+  </div>
+  <div id="splashScreen" class="splash-screen">
+    <h1>Cargando OmniRack...</h1>
   </div>
 
   <script src="/js/sse-client.js"></script>

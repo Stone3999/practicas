@@ -82,6 +82,18 @@ class _WearableAppState extends State<WearableApp> {
       ),
       home: Scaffold(
         backgroundColor: Colors.black,
+        floatingActionButton: FloatingActionButton(
+          onPressed: () {
+            setState(() {
+              if (_sim.isRunning) {
+                _sim.stop();
+              } else {
+                _sim.start();
+              }
+            });
+          },
+          child: Icon(_sim.isRunning ? Icons.pause : Icons.play_arrow),
+        ),
         body: Center(
           child: LayoutBuilder(
             builder: (context, constraints) {

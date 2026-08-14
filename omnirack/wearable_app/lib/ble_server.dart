@@ -93,9 +93,8 @@ class BleServer {
       // logica
       // logica
       _subs.add(simulator.dataStream.listen((RackSensorData d) {
-        _notify(BleConstants.temperatureUUID, _floatToBytes(d.temperature));
-        _notify(BleConstants.humidityUUID, _byteToBytes(d.humidity));
-        _notify(BleConstants.powerUUID, _floatToBytes(d.power));
+        final str = 'temp:${d.temperature.toStringAsFixed(1)}|hum:${d.humidity}|pwr:${(d.power * 100).toInt()}';
+        _notify(BleConstants.temperatureUUID, Uint8List.fromList(utf8.encode(str)));
         _notify(BleConstants.doorUUID, Uint8List.fromList(utf8.encode(d.door)));
         _notify(BleConstants.alertUUID, _byteToBytes(d.alert));
       }));

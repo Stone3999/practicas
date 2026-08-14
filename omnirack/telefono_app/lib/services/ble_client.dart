@@ -121,7 +121,26 @@ class BleClient {
     if (bytes.isEmpty) return;
 
     if (uuid == Guid(BleConstants.temperatureUUID).toString()) {
-      _temp = ByteData.sublistView(Uint8List.fromList(bytes)).getFloat32(0, Endian.little);
+      try {
+        final str = utf8.decode(bytes);
+        if (str.contains('|')) {
+          final parts = str.split('|');
+          for (var p in parts) {
+            final kv = p.split(':');
+            if (kv.length == 2) {
+              if (kv[0] == 'temp') _temp = double.parse(kv[1]);
+              if (kv[0] == 'hum') _hum = int.parse(kv[1]);
+              if (kv[0] == 'pwr') _pow = double.parse(kv[1]) / 100.0;
+            }
+          }
+        } else {
+          _temp = ByteData.sublistView(Uint8List.fromList(bytes)).getFloat32(0, Endian.little);
+        }
+      } catch (e) {
+        try {
+          _temp = ByteData.sublistView(Uint8List.fromList(bytes)).getFloat32(0, Endian.little);
+        } catch (_) {}
+      }
     } else if (uuid == Guid(BleConstants.humidityUUID).toString()) {
       _hum = bytes[0];
     } else if (uuid == Guid(BleConstants.powerUUID).toString()) {
