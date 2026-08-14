@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/rack_provider.dart';
+import '../services/rack_link_client.dart';
 import '../widgets/alert_banner.dart';
 import '../widgets/connection_indicator.dart';
 
@@ -37,6 +38,8 @@ class DashboardScreen extends StatelessWidget {
       body: Column(
         children: [
           ConnectionIndicator(state: provider.connectionState),
+          _DataCenterSelector(provider: provider),
+          _ConnectButton(provider: provider),
           if (isAlert) AlertBanner(message: alertMessage),
           const Padding(
             padding: EdgeInsets.all(16.0),
@@ -117,6 +120,87 @@ class DashboardScreen extends StatelessWidget {
                   ),
                 );
               },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// logica
+// logica
+/// Botón único: Conectar vincula el celular al rack seleccionado (IP local
+/// del backend) y enciende la sesión compartida; al tocarlo de nuevo,
+/// Detener la apaga, y el reloj se detiene también.
+class _ConnectButton extends StatelessWidget {
+  final RackProvider provider;
+
+  const _ConnectButton({required this.provider});
+
+  @override
+  Widget build(BuildContext context) {
+    final state = provider.connectionState;
+    final isConnected = state == LinkState.connected;
+    final isConnecting = state == LinkState.connecting;
+    final isActive = isConnected || isConnecting;
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+      child: SizedBox(
+        width: double.infinity,
+        child: ElevatedButton.icon(
+          onPressed: () => isActive ? provider.disconnect() : provider.connect(),
+          icon: isConnecting
+              ? const SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                )
+              : Icon(isConnected ? Icons.link_off : Icons.link),
+          label: Text(isConnected ? 'Detener' : (isConnecting ? 'Conectando...' : 'Conectar')),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: isActive ? const Color(0xFF40F000) : const Color(0xFFC81030),
+            foregroundColor: Colors.white,
+            padding: const EdgeInsets.symmetric(vertical: 14),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// logica
+// logica
+/// Selector de Data Center (A-D). Cambiarlo aquí re-vincula al Rack 1 de
+/// ese DC y, si ya estamos conectados, se refleja de inmediato en el reloj.
+class _DataCenterSelector extends StatelessWidget {
+  final RackProvider provider;
+
+  const _DataCenterSelector({required this.provider});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+      child: Row(
+        children: [
+          const Text('Data Center:', style: TextStyle(fontWeight: FontWeight.w600)),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Wrap(
+              spacing: 8,
+              children: RackProvider.dataCenters.map((dc) {
+                final selected = provider.dataCenter == dc;
+                return ChoiceChip(
+                  label: Text('DC-$dc'),
+                  selected: selected,
+                  selectedColor: const Color(0xFFC81030),
+                  labelStyle: TextStyle(color: selected ? Colors.white : const Color(0xFF181818)),
+                  onSelected: (_) => provider.selectDataCenter(dc),
+                );
+              }).toList(),
             ),
           ),
         ],

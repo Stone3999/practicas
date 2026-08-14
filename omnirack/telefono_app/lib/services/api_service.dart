@@ -75,6 +75,41 @@ class ApiService {
     }
   }
 
+  // logica
+  // logica
+  /// Estado compartido de vinculacion (rack activo + encendido/apagado) que
+  /// el reloj y el celular leen y escriben para quedar sincronizados.
+  Future<Map<String, dynamic>?> getSession() async {
+    try {
+      final response = await http.get(Uri.parse(ApiConfig.session()));
+      if (response.statusCode == 200) {
+        return json.decode(response.body) as Map<String, dynamic>;
+      }
+    } catch (e) {
+      // logica
+    }
+    return null;
+  }
+
+  Future<Map<String, dynamic>?> updateSession({String? activeRackId, bool? linked}) async {
+    try {
+      final body = <String, dynamic>{};
+      if (activeRackId != null) body['activeRackId'] = activeRackId;
+      if (linked != null) body['linked'] = linked;
+      final response = await http.put(
+        Uri.parse(ApiConfig.session()),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode(body),
+      );
+      if (response.statusCode == 200) {
+        return json.decode(response.body) as Map<String, dynamic>;
+      }
+    } catch (e) {
+      // logica
+    }
+    return null;
+  }
+
   Future<String?> generateToken() async {
     try {
       final response = await http.post(Uri.parse(ApiConfig.authToken()));

@@ -15,10 +15,11 @@ Este documento especifica las versiones exactas y las herramientas utilizadas pa
 ## Dependencias Clave y Versiones
 
 ### Frontend (Flutter - Wearable y Teléfono)
-*   `flutter_blue_plus`: ^1.32.12 (Comunicación Bluetooth Low Energy)
-*   `ble_peripheral`: ^2.4.0 (Emulación de periférico BLE en Wearable)
+*   `http`: ^1.2.1 (Peticiones HTTP al backend — el reloj y el celular se
+    vinculan por IP local, ya no por BLE; `flutter_blue_plus`/`ble_peripheral`
+    se retiraron el 13 ago 2026)
 *   `provider`: ^6.1.2 (Gestión de estado)
-*   `http`: ^1.2.1 (Peticiones HTTP al backend)
+*   `flutter_dotenv`: ^5.1.0 (Configuración `.env` del Teléfono: `API_BASE_URL`, `DEFAULT_RACK_ID`)
 *   `flutter_dotenv`: ^5.1.0 (Lectura de variables de entorno)
 
 ### Backend (Node.js)

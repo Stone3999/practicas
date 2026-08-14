@@ -1,12 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/rack_provider.dart';
+import '../services/rack_link_client.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final provider = Provider.of<RackProvider>(context);
+    final isConnected = provider.connectionState == LinkState.connected;
+    final isConnecting = provider.connectionState == LinkState.connecting;
+
     return Scaffold(
       backgroundColor: const Color(0xFFF8F8F8),
       appBar: AppBar(
@@ -19,10 +24,29 @@ class SettingsScreen extends StatelessWidget {
             title: Text('General', style: TextStyle(color: Color(0xFFC81030), fontWeight: FontWeight.bold)),
           ),
           ListTile(
-            leading: const Icon(Icons.watch),
+            leading: Icon(Icons.watch, color: isConnected ? const Color(0xFF40F000) : null),
             title: const Text('Vincular Wearable'),
-            subtitle: const Text('Configurar Data Center y Rack'),
-            onTap: () => _showWearableConfigDialog(context),
+            subtitle: Text(
+              isConnected
+                  ? 'Vinculado con ${provider.selectedRackId} (IP local)'
+                  : 'Toca para conectar con el rack ${provider.selectedRackId}',
+            ),
+            trailing: isConnecting
+                ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                : Icon(isConnected ? Icons.link_off : Icons.chevron_right,
+                    color: isConnected ? const Color(0xFF40F000) : null),
+            onTap: isConnecting
+                ? null
+                : () async {
+                    if (isConnected) {
+                      await provider.disconnect();
+                      return;
+                    }
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Conectando por IP local...')),
+                    );
+                    await provider.connect();
+                  },
           ),
           ListTile(
             leading: const Icon(Icons.notifications),
@@ -51,77 +75,6 @@ class SettingsScreen extends StatelessWidget {
           ),
         ],
       ),
-    );
-  }
-
-  void _showWearableConfigDialog(BuildContext context) {
-    String selectedDc = 'DC-Norte';
-    String selectedRack = 'Rack-01';
-
-    final dcs = ['DC-Norte', 'DC-Sur', 'DC-Este', 'DC-Oeste'];
-    final racks = ['Rack-01', 'Rack-02', 'Rack-03', 'Rack-04', 'Rack-05', 'Rack-06'];
-
-    showDialog(
-      context: context,
-      builder: (BuildContext dialogContext) {
-        return StatefulBuilder(
-          builder: (context, setState) {
-            return AlertDialog(
-              title: const Text('Vincular Wearable'),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Text('Seleccione el Data Center y el Rack a monitorear.'),
-                  const SizedBox(height: 16),
-                  DropdownButton(
-                    value: selectedDc,
-                    isExpanded: true,
-                    hint: const Text('Data Center'),
-                    items: dcs.map((dc) => DropdownMenuItem(value: dc, child: Text(dc))).toList(),
-                    onChanged: (val) {
-                      if (val != null) setState(() => selectedDc = val);
-                    },
-                  ),
-                  const SizedBox(height: 16),
-                  DropdownButton(
-                    value: selectedRack,
-                    isExpanded: true,
-                    hint: const Text('Rack'),
-                    items: racks.map((rack) => DropdownMenuItem(value: rack, child: Text(rack))).toList(),
-                    onChanged: (val) {
-                      if (val != null) setState(() => selectedRack = val);
-                    },
-                  ),
-                ],
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(dialogContext),
-                  child: const Text('Cancelar', style: TextStyle(color: Colors.grey)),
-                ),
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFC81030)),
-                  onPressed: () async {
-                    Navigator.pop(dialogContext); // logica
-                    final provider = Provider.of<RackProvider>(context, listen: false);
-                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Escribiendo configuración...')));
-                    
-                    final success = await provider.writeWearableConfig(selectedDc, selectedRack);
-                    if (!context.mounted) return;
-                    
-                    if (success) {
-                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('¡Wearable configurado con éxito!')));
-                    } else {
-                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Simulación: Wearable configurado con éxito.')));
-                    }
-                  },
-                  child: const Text('Vincular', style: TextStyle(color: Colors.white)),
-                ),
-              ],
-            );
-          },
-        );
-      },
     );
   }
 }

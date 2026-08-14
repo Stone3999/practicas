@@ -15,6 +15,17 @@ class RackSensorData {
     required this.timestamp,
   });
 
+  factory RackSensorData.fromJson(Map<String, dynamic> json) {
+    return RackSensorData(
+      temperature: (json['temperature'] as num?)?.toDouble() ?? 0.0,
+      humidity: (json['humidity'] as num?)?.toInt() ?? 0,
+      power: (json['power'] as num?)?.toDouble() ?? 0.0,
+      door: (json['door'] == true) ? 'OPEN' : 'CLOSED',
+      alert: (json['alert'] == true) ? 1 : 0,
+      timestamp: DateTime.tryParse(json['timestamp'] as String? ?? '') ?? DateTime.now(),
+    );
+  }
+
   RackSensorData copyWith({
     double? temperature,
     int? humidity,

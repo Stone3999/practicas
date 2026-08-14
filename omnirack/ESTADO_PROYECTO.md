@@ -1,7 +1,13 @@
 # OMNIRACK — Estado del proyecto y lista de cotejo
 
 > Documento de seguimiento del ecosistema de 3 dispositivos.
-> Actualizado: 7 de agosto de 2026 · Nivel objetivo: **AU (100)**
+> Actualizado: 13 de agosto de 2026 · Nivel objetivo: **AU (100)**
+>
+> ⚠️ **Cambio de arquitectura (13 ago 2026):** el enlace reloj↔celular por BLE
+> se reemplazó por vinculación **IP local** (HTTP directo al backend + una
+> sesión compartida). Ver el punto 6 de "Decisiones acordadas" y la sección
+> "Fase 2/3 (actualización)" más abajo — los checklists de BLE (SA.1.A/B)
+> quedan documentados como estaban, con una nota de qué sigue vigente y qué no.
 
 ---
 
@@ -20,12 +26,20 @@ de manera **síncrona**, combinando:
 ### Arquitectura del ecosistema
 
 ```
-[Wearable - sensor del rack] ──BLE NOTIFY──> [Teléfono Flutter] ──HTTP POST──> [Backend Node/Express] ──SSE──> [PWA Smart TV]
+[Wearable - sensor del rack] ──HTTP POST (IP local)──> [Backend Node/Express] ──SSE──> [PWA Smart TV]
+[Teléfono Flutter] ──HTTP GET/polling (IP local)──> [Backend Node/Express]
+Ambos dispositivos leen/escriben además /api/session (rack activo + on/off)
+para quedar sincronizados sin canal directo entre ellos.
 ```
 
-El teléfono es el **puente**: recibe datos del wearable por BLE y los reenvía al
-backend (la "API del caso de estudio"). La TV se suscribe por SSE (tiempo real <2 s)
-y usa BroadcastChannel para comunicación local.
+El backend es ahora el **puente único**: el wearable le manda sus lecturas
+por HTTP directo (ya no por BLE al teléfono), y el teléfono las lee del
+mismo backend por polling. La TV se suscribe por SSE (tiempo real <2 s) y
+usa BroadcastChannel para comunicación local. Se abandonó el enlace BLE
+reloj↔celular porque BLE entre emuladores no funciona en Windows (ver punto
+2 más abajo); la vinculación por IP local resuelve esa limitación y además
+permite que "Detener" o cambiar de Data Center en cualquiera de los dos
+dispositivos se refleje en el otro.
 
 ---
 
@@ -33,8 +47,16 @@ y usa BroadcastChannel para comunicación local.
 
 1. **Nivel objetivo: AU (100)** → SA completo + DE (Lighthouse, video demo) + SSE/WebSocket
    en tiempo real + tester externo + ciclo de vida de datos.
-2. **Demo BLE**: código BLE real (GATT NOTIFY) + fallback de simulación local en el
-   teléfono cuando no hay dispositivo (BLE entre emuladores no funciona en Windows).
+2. ~~**Demo BLE**: código BLE real (GATT NOTIFY) + fallback de simulación local en el
+   teléfono cuando no hay dispositivo (BLE entre emuladores no funciona en Windows).~~
+   **Superada el 13 ago 2026**: en vez de un fallback de simulación cuando BLE
+   fallaba, se quitó BLE por completo. Reloj y celular son clientes HTTP del
+   backend (misma IP local); un endpoint `/api/session` (GET/PUT) guarda el
+   rack activo y si el enlace está encendido, y cada dispositivo lo consulta
+   cada ~2s. Ventaja sobre el fallback anterior: ambos dispositivos muestran
+   el **mismo dato real** (antes, sin BLE, cada uno simulaba su propio
+   número al azar) y "Conectar/Detener" o cambiar de Data Center en uno se
+   refleja en el otro automáticamente.
 3. **ffmpeg instalado** vía winget (requisito del nivel DE y del reporte SA.6.A).
 4. **Paleta OMNIMAN** (extraída de los mockups de Figma `p1.2` / `p1.3`):
 
@@ -181,28 +203,35 @@ Ubicación: `omnirack/wearable_app/` (copiada y adaptada de `Practicas/p2.6/wear
 | Simulador de sensores genera datos del caso de estudio cada segundo (Datos: temp, humedad, consumo, puerta, alerta) | ✅ |
 | Al menos 3 tipos de datos generados | ✅ |
 | Pantalla del wearable muestra datos localmente en tiempo real | ✅ |
-| Botón Iniciar/Detener controla la generación de datos | ✅ |
-| Características GATT expuestas con NOTIFY (no solo WRITE) para cada tipo de dato | ✅ |
-| UUIDs de servicio y características definidos como constantes compartidas | ✅ |
+| Botón Iniciar/Detener controla la generación de datos | ✅ (ahora es el botón único "Conectar/Detener", ver nota) |
+| Características GATT expuestas con NOTIFY (no solo WRITE) para cada tipo de dato | ❌ *(superado 13 ago: ya no hay BLE; el wearable expone sus datos vía `HTTP POST /api/racks/:id/data` al backend)* |
+| UUIDs de servicio y características definidos como constantes compartidas | ❌ *(ya no aplica; `ble_constants.dart` se eliminó — la config compartida ahora es `wearable_app/lib/config/app_config.dart`)* |
 
-**Subtotal: 7/8** (falta confirmar build en emulador)
+**Subtotal: 5/8** (bajó de 7/8 por el cambio a IP local; falta confirmar build en emulador)
 
 ---
 
 ### SA.1.B — App teléfono: recepción y visualización de datos del wearable
 
+> ⚠️ Esta tabla se escribió pensando en BLE. Tras el cambio del 13 ago, léela
+> con su equivalente por IP local: donde dice "BleClient/NOTIFY/bytes", el
+> celular usa `RackLinkClient` (polling HTTP a `/api/racks/:id` cada 1s) y
+> parsea JSON (`RackSensorData.fromJson`) en vez de bytes BLE. Falta una
+> revisión formal fila por fila contra el rubric real (no se hizo en esta
+> pasada, solo se dejó constancia del cambio de transporte).
+
 | Elemento a evaluar | Cumplido |
 |---|---|
-| BleClient escanea y encuentra el wearable por serviceUUID | ☐ (Fase 3) |
-| Suscripción a NOTIFY activa en cada característica (`setNotifyValue true`) | ☐ (Fase 3) |
-| Los bytes recibidos se parsean correctamente según su tipo (int, float, string) | ☐ (Fase 3) |
-| ActivityProvider (o equivalente) acumula los datos y notifica a la UI | ☐ (Fase 3) |
-| Widget de monitoreo muestra mínimo 3 métricas en tiempo real | ☐ (Fase 3) |
-| Alerta visible cuando un dato supera un umbral crítico (Umbral: temp ≥35°C, humedad fuera de rango, consumo ≥9.5 kW, puerta abierta) | ☐ (Fase 3) |
-| La UI muestra estado de conexión BLE (buscando / conectado / error / desconectado) | ☐ (Fase 3) |
-| Al desconectar el wearable, la app no crashea y muestra mensaje de estado | ☐ (Fase 3) |
+| ~~BleClient escanea y encuentra el wearable por serviceUUID~~ → `RackLinkClient` hace polling HTTP al rack activo | ✅ (equivalente IP local) |
+| ~~Suscripción a NOTIFY activa en cada característica~~ → polling `GET /api/racks/:id` cada 1s | ✅ (equivalente IP local) |
+| ~~Los bytes recibidos se parsean según su tipo~~ → JSON parseado con `RackSensorData.fromJson` | ✅ (equivalente IP local) |
+| ActivityProvider (o equivalente) acumula los datos y notifica a la UI | ✅ (`RackProvider`) |
+| Widget de monitoreo muestra mínimo 3 métricas en tiempo real | ☐ (revisar contra rubric) |
+| Alerta visible cuando un dato supera un umbral crítico (Umbral: temp ≥35°C, humedad fuera de rango, consumo ≥9.5 kW, puerta abierta) | ☐ (revisar contra rubric) |
+| La UI muestra estado de conexión (buscando / conectado / error / desconectado) | ✅ (`ConnectionIndicator`, ya no dice "BLE") |
+| Al desconectar el backend, la app no crashea y muestra mensaje de estado | ✅ (`LinkState.error`, reintenta solo) |
 
-**Subtotal: 0/8**
+**Subtotal: 5/8** (pendiente revisar las 2 filas marcadas y confirmar con el rubric real si el cambio de BLE a IP local es aceptable para estos criterios)
 
 ---
 
@@ -258,14 +287,14 @@ Ubicación: `omnirack/wearable_app/` (copiada y adaptada de `Practicas/p2.6/wear
 
 | Elemento a evaluar | Cumplido |
 |---|---|
-| App Flutter teléfono muestra datos del caso de estudio desde la API en tiempo real (P2.5) | ☐ (Fase 3) |
-| App wearable genera y envía datos al teléfono vía BLE NOTIFY (P2.6) | ☐ (Fase 2/3) |
-| PWA Smart TV muestra datos sincronizados con el teléfono (P3.3) | ☐ (Fase 4) |
+| App Flutter teléfono muestra datos del caso de estudio desde la API en tiempo real (P2.5) | ✅ (polling HTTP a `/api/racks/:id`) |
+| App wearable genera y envía datos al backend por IP local (P2.6) — *criterio original pedía BLE NOTIFY al teléfono, ver nota del 13 ago* | ✅ (equivalente IP local; ⚠️ confirmar con el profesor si el cambio de transporte es aceptable) |
+| PWA Smart TV muestra datos sincronizados con el teléfono (P3.3) | ✅ (ambos leen del mismo backend/sesión) |
 | Los 3 dispositivos activos SIMULTÁNEAMENTE durante la demo de 5 minutos | ☐ (Fase 5) |
 | README.md actualizado con instrucciones de cómo ejecutar los 3 proyectos | ☐ (Fase 6) |
 | Release v1.0 etiquetado en GitHub con descripción de cambios | ☐ (Fase 7) |
 | Repositorio limpio: sin API keys, sin .jks, sin .env en el historial ⚠ | ✅ |
-| **Subtotal: 1/7** | |
+| **Subtotal: 4/7** | |
 
 ---
 
@@ -330,8 +359,8 @@ Ubicación: `omnirack/wearable_app/` (copiada y adaptada de `Practicas/p2.6/wear
 
 ### Decisión Nivel SA — 80 puntos (para alcanzarlo)
 - Mínimo 6/7 en SA.0.B (APK firmado e instalable)
-- Mínimo 7/8 en SA.1.A (wearable generando datos e ícono propio)
-- Mínimo 7/8 en SA.1.B (teléfono recibe datos BLE NOTIFY)
+- Mínimo 7/8 en SA.1.A (wearable generando datos e ícono propio) — ⚠️ bajó a 5/8 tras quitar BLE, revisar con el profesor
+- Mínimo 7/8 en SA.1.B (teléfono recibe datos del wearable, ahora por IP local en vez de BLE NOTIFY)
 - Mínimo 6/7 en SA.2.A (estructura PWA)
 - Mínimo 6/7 en SA.2.B (layout 10-foot)
 - Mínimo 7/8 en SA.2.C (navegación y datos reales)

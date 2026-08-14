@@ -15,6 +15,7 @@ const racksRouter = require('./routes/racks');
 const alertsRouter = require('./routes/alerts');
 const authRouter = require('./routes/auth');
 const eventsRouter = require('./routes/events');
+const sessionRouter = require('./routes/session');
 
 const PORT = Number(process.env.PORT) || 3000;
 const app = express();
@@ -59,6 +60,7 @@ app.use('/api/racks', racksRouter);
 app.use('/api/alerts', alertsRouter);
 app.use('/api/auth', authRouter);
 app.use('/api/events', eventsRouter);
+app.use('/api/session', sessionRouter);
 
 // logica
 const tvDir = path.join(__dirname, '..', 'smart_tv');
@@ -74,7 +76,7 @@ store.load();
 lifecycle.start();
 
 app.listen(PORT, () => {
-  console.log(`[omnirack] API lista en http://localhost:${PORT}`);
-  console.log(`[omnirack] Smart TV (PWA) en http://localhost:${PORT}/`);
-  console.log(`[omnirack] SSE en http://localhost:${PORT}/api/events/stream`);
+  console.log(`[omnirack] API lista en http://10.13.37.184:${PORT}`);
+  console.log(`[omnirack] Smart TV (PWA) en http://10.13.37.184:${PORT}/`);
+  console.log(`[omnirack] SSE en http://10.13.37.184:${PORT}/api/events/stream`);
 });

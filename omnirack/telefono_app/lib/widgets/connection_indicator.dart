@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import '../services/ble_client.dart';
+import '../services/rack_link_client.dart';
 
 class ConnectionIndicator extends StatelessWidget {
-  final BleConnectionState state;
+  final LinkState state;
 
   const ConnectionIndicator({super.key, required this.state});
 
@@ -12,23 +12,19 @@ class ConnectionIndicator extends StatelessWidget {
     String text;
 
     switch (state) {
-      case BleConnectionState.connected:
+      case LinkState.connected:
         color = const Color(0xFF40F000);
-        text = 'Conectado via BLE';
+        text = 'Conectado (IP local)';
         break;
-      case BleConnectionState.scanning:
+      case LinkState.connecting:
         color = const Color(0xFFE0B840);
-        text = 'Buscando wearable...';
+        text = 'Conectando...';
         break;
-      case BleConnectionState.simulating:
-        color = Colors.blue;
-        text = 'Modo simulación';
-        break;
-      case BleConnectionState.error:
+      case LinkState.error:
         color = const Color(0xFFC81030);
         text = 'Error de conexión';
         break;
-      case BleConnectionState.disconnected:
+      case LinkState.disconnected:
         color = const Color(0xFF181818);
         text = 'Desconectado';
         break;

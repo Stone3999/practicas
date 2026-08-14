@@ -1,5 +1,5 @@
 name: wearable_app
-description: "OMNIRACK - App wearable (Wear OS) que simula el sensor de un rack y envia datos por BLE NOTIFY."
+description: "OMNIRACK - App wearable (Wear OS) que simula el sensor de un rack y envia datos al backend por HTTP (IP local)."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
@@ -30,8 +30,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  flutter_blue_plus: ^1.32.12
-  ble_peripheral: ^2.4.0
+  http: ^1.2.1
   cupertino_icons: ^1.0.8
 
 dev_dependencies:

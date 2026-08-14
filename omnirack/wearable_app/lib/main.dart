@@ -2,10 +2,11 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
-import 'ble_server.dart';
+import 'config/app_config.dart';
 import 'omnirack_colors.dart';
 import 'rack_sensor_data.dart';
 import 'sensor_simulator.dart';
+import 'services/backend_client.dart';
 
 void main() => runApp(const WearableApp());
 
@@ -23,50 +24,88 @@ class WearableApp extends StatefulWidget {
 
 class _WearableAppState extends State<WearableApp> {
   late final SensorSimulator _sim;
-  late final BleServer _server;
+  late final BackendClient _client;
   final List<StreamSubscription> _subs = [];
+  Timer? _sessionTimer;
 
   RackSensorData? _data;
-  String? _serverError;
-  String? _config;
+  LinkState _link = LinkState.disconnected;
+  String _rackId = AppConfig.defaultRackId;
 
   @override
   void initState() {
     super.initState();
     _sim = SensorSimulator();
-    _server = BleServer(_sim);
-    
-    _server.onConfigReceived = (config) {
-      if (mounted) {
-        setState(() {
-          _config = config;
-        });
-      }
-    };
-    
-    _subs.add(_sim.dataStream.listen((d) {
-      if (mounted) {
-        setState(() => _data = d);
-      }
+    _client = BackendClient(rackId: AppConfig.defaultRackId);
+
+    _subs.add(_client.stateStream.listen((state) {
+      if (mounted) setState(() => _link = state);
     }));
 
     // logica
-    _sim.start();
-    _server.startAdvertising().catchError((e) {
-      if (mounted) {
-        setState(() {
-          _serverError = 'BLE Error: $e';
-        });
+    _subs.add(_sim.dataStream.listen((d) {
+      if (mounted) setState(() => _data = d);
+      _client.sendReading(d);
+    }));
+
+    // logica
+    // logica
+    _sessionTimer = Timer.periodic(const Duration(seconds: 2), (_) => _syncSession());
+    _syncSession();
+  }
+
+  // logica
+  // logica
+  /// Sigue el estado compartido en el backend: si el celular apagó la
+  /// sesión, este reloj se detiene; si el celular cambió de Data Center,
+  /// este reloj empieza a enviar al nuevo rack.
+  Future<void> _syncSession() async {
+    final session = await _client.fetchSession();
+    if (session == null) return;
+
+    final remoteRackId = session['activeRackId'] as String?;
+    final remoteLinked = session['linked'] as bool? ?? false;
+
+    if (remoteRackId != null && remoteRackId != _rackId) {
+      setState(() => _rackId = remoteRackId);
+      _client.rackId = remoteRackId;
+    }
+
+    if (remoteLinked && !_sim.isRunning) {
+      setState(() => _sim.start());
+      _client.connect();
+    } else if (!remoteLinked && _sim.isRunning) {
+      setState(() => _sim.stop());
+      _client.disconnect();
+    }
+  }
+
+  // logica
+  void _toggleConnect() {
+    final willRun = !_sim.isRunning;
+    setState(() {
+      if (willRun) {
+        _sim.start();
+      } else {
+        _sim.stop();
       }
     });
+
+    if (willRun) {
+      _client.connect();
+    } else {
+      _client.disconnect();
+    }
+    _client.pushSession(activeRackId: _rackId, linked: willRun);
   }
 
   @override
   void dispose() {
+    _sessionTimer?.cancel();
     for (final s in _subs) {
       s.cancel();
     }
-    _server.stop();
+    _client.dispose();
     _sim.dispose();
     super.dispose();
   }
@@ -82,31 +121,30 @@ class _WearableAppState extends State<WearableApp> {
       ),
       home: Scaffold(
         backgroundColor: Colors.black,
+        floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
         floatingActionButton: FloatingActionButton(
-          onPressed: () {
-            setState(() {
-              if (_sim.isRunning) {
-                _sim.stop();
-              } else {
-                _sim.start();
-              }
-            });
-          },
-          child: Icon(_sim.isRunning ? Icons.pause : Icons.play_arrow),
+          mini: true,
+          onPressed: _toggleConnect,
+          backgroundColor:
+              _sim.isRunning ? Colors.grey.shade800 : OmniRackColors.red,
+          tooltip: _sim.isRunning ? 'Detener' : 'Conectar',
+          child: Icon(_sim.isRunning ? Icons.link_off : Icons.link),
         ),
-        body: Center(
+        body: Padding(
+          padding: const EdgeInsets.only(bottom: 32), // logica: deja hueco para el FAB
+          child: Center(
           child: LayoutBuilder(
             builder: (context, constraints) {
               final size = constraints.maxWidth < constraints.maxHeight
                   ? constraints.maxWidth
                   : constraints.maxHeight;
-              final double w = size * 0.95; // logica
-              
+              final double w = size * 0.8; // logica
+
               final data = _data;
               final double temp = data?.temperature ?? 0.0;
               final bool isAlert = data?.isAlert ?? (temp > 35.0);
               final Color tempColor = temp > 35.0 ? OmniRackColors.red : Colors.grey.shade800;
-              
+
               return Container(
                 width: w,
                 height: w,
@@ -118,13 +156,13 @@ class _WearableAppState extends State<WearableApp> {
                     width: w * 0.08, // logica
                   ),
                 ),
-                child: _config == null
+                child: !_sim.isRunning
                     ? Center(
                         child: Text(
-                          'Esperando\nconfiguración...',
+                          'Toca Conectar\npara vincular',
                           textAlign: TextAlign.center,
                           style: TextStyle(
-                            color: Colors.grey.shade600, 
+                            color: Colors.grey.shade600,
                             fontSize: w * 0.08,
                             fontWeight: FontWeight.w600,
                           ),
@@ -140,7 +178,7 @@ class _WearableAppState extends State<WearableApp> {
                             size: w * 0.18,
                           ),
                           SizedBox(height: w * 0.02),
-                          
+
                           // logica
                           Row(
                             mainAxisAlignment: MainAxisAlignment.center,
@@ -165,11 +203,11 @@ class _WearableAppState extends State<WearableApp> {
                               ),
                             ],
                           ),
-                          SizedBox(height: w * 0.04),
-                          
+                          SizedBox(height: w * 0.03),
+
                           // logica
                           Text(
-                            _config ?? 'Rack 1',
+                            _rackId,
                             style: TextStyle(
                               fontSize: w * 0.08,
                               color: Colors.grey.shade600,
@@ -177,10 +215,28 @@ class _WearableAppState extends State<WearableApp> {
                             ),
                             textAlign: TextAlign.center,
                           ),
+                          SizedBox(height: w * 0.02),
+
+                          // logica
+                          Text(
+                            _link == LinkState.connected
+                                ? 'Enviando ●'
+                                : (_link == LinkState.error
+                                    ? 'Sin backend ⚠'
+                                    : 'Conectando...'),
+                            style: TextStyle(
+                              fontSize: w * 0.05,
+                              fontWeight: FontWeight.bold,
+                              color: _link == LinkState.connected
+                                  ? OmniRackColors.green
+                                  : OmniRackColors.red,
+                            ),
+                          ),
                         ],
                       )),
               );
             },
+          ),
           ),
         ),
       ),
